@@ -1,0 +1,27 @@
+[
+  {
+    "id": "1",
+    "name": "Ready to Move In",
+    "name_th": "พร้อมอยู่"
+  },
+  {
+    "id": "2",
+    "name": "Under Construction",
+    "name_th": "อยู่ระหว่างการก่อสร้าง"
+  },
+  {
+    "id": "3",
+    "name": "Pre-launch",
+    "name_th": "เปิดตัวเร็วๆ นี้"
+  },
+  {
+    "id": "4",
+    "name": "Completed",
+    "name_th": "เสร็จสมบูรณ์"
+  },
+  {
+    "id": "5",
+    "name": "Planning Phase",
+    "name_th": "ระยะวางแผน"
+  }
+]

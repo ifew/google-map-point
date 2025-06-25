@@ -1,0 +1,27 @@
+[
+  {
+    "id": "2",
+    "name": "Condo",
+    "name_th": "คอนโด"
+  },
+  {
+    "id": "1",
+    "name": "Detached House",
+    "name_th": "บ้าน"
+  },
+  {
+    "id": "3",
+    "name": "Townhome",
+    "name_th": "ทาวน์โฮม"
+  },
+  {
+    "id": "20000",
+    "name": "Twin House",
+    "name_th": "บ้านแฝด"
+  },
+  {
+    "id": "5",
+    "name": "Apartment",
+    "name_th": "อพาร์ตเมนต์"
+  }
+]

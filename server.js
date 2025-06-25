@@ -51,24 +51,51 @@ app.get('/api/points', (req, res) => {
 
 app.get('/api/search', (req, res) => {
     try {
-        const query = req.query.q;
-        if (!query || query.length < 3) {
-            return res.json([]);
-        }
+        const { q: query, location_id, property_types, building_status, limit = 50 } = req.query;
         
         const dataPath = path.join(__dirname, 'public', 'data', 'project.json');
         const data = fs.readFileSync(dataPath, 'utf8');
         const jsonData = JSON.parse(data);
         
-        const searchResults = jsonData.payload
-            .filter(project => 
+        let filteredResults = jsonData.payload;
+        
+        // Apply location filter
+        if (location_id) {
+            filteredResults = filteredResults.filter(project => 
+                project.location_id === location_id
+            );
+        }
+        
+        // Apply property type filter (can be multiple)
+        if (property_types) {
+            const propertyTypeIds = Array.isArray(property_types) ? property_types : property_types.split(',');
+            filteredResults = filteredResults.filter(project => 
+                propertyTypeIds.includes(project.propertytype_id)
+            );
+        }
+        
+        // Apply building status filter (can be multiple)
+        if (building_status) {
+            const statusIds = Array.isArray(building_status) ? building_status : building_status.split(',');
+            filteredResults = filteredResults.filter(project => 
+                statusIds.includes(project.building_status_id)
+            );
+        }
+        
+        // Apply keyword search
+        if (query && query.length >= 3) {
+            filteredResults = filteredResults.filter(project => 
                 project.name_th?.toLowerCase().includes(query.toLowerCase()) ||
                 project.name_en?.toLowerCase().includes(query.toLowerCase()) ||
                 project.propertytype_name_th?.toLowerCase().includes(query.toLowerCase()) ||
                 project.developer_name_th?.toLowerCase().includes(query.toLowerCase()) ||
                 project.province_name_th?.toLowerCase().includes(query.toLowerCase())
-            )
-            .slice(0, 10)
+            );
+        }
+        
+        // Limit results and transform data
+        const searchResults = filteredResults
+            .slice(0, parseInt(limit))
             .map(project => ({
                 lat: parseFloat(project.latitude),
                 lng: parseFloat(project.longitude),
@@ -79,13 +106,57 @@ app.get('/api/search', (req, res) => {
                 longitude: project.longitude,
                 count_unit: project.count_unit,
                 project_id: project.project_id,
-                province_name_th: project.province_name_th
+                province_name_th: project.province_name_th,
+                location_id: project.location_id,
+                propertytype_id: project.propertytype_id,
+                building_status_id: project.building_status_id,
+                building_status_name_th: project.building_status_name_th,
+                price_min: project.price_min
             }));
         
         res.json(searchResults);
     } catch (error) {
         console.error('Error searching projects:', error);
         res.status(500).json({ error: 'Failed to search projects' });
+    }
+});
+
+// API endpoint for locations
+app.get('/api/locations', (req, res) => {
+    try {
+        const dataPath = path.join(__dirname, 'public', 'data', 'location.json');
+        const data = fs.readFileSync(dataPath, 'utf8');
+        const locations = JSON.parse(data);
+        res.json(locations);
+    } catch (error) {
+        console.error('Error reading location.json:', error);
+        res.status(500).json({ error: 'Failed to load locations' });
+    }
+});
+
+// API endpoint for property types
+app.get('/api/property-types', (req, res) => {
+    try {
+        const dataPath = path.join(__dirname, 'public', 'data', 'properties_type.json');
+        const data = fs.readFileSync(dataPath, 'utf8');
+        const propertyTypes = JSON.parse(data);
+        res.json(propertyTypes);
+    } catch (error) {
+        console.error('Error reading properties_type.json:', error);
+        res.status(500).json({ error: 'Failed to load property types' });
+    }
+});
+
+// API endpoint for building status
+app.get('/api/building-status', (req, res) => {
+    try {
+        const dataPath = path.join(__dirname, 'public', 'data', 'building_status.json');
+        const data = fs.readFileSync(dataPath, 'utf8');
+        const buildingStatus = JSON.parse(data);
+        res.json(buildingStatus);
+    } catch (error) {
+        console.error('Error reading building_status.json:', error);
+        res.status(500).json({ error: 'Failed to load building status' });
     }
 });
 

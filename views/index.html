@@ -3,17 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Map Points</title>
+    <title>Property Map Analytics</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div id="map"></div>
-    <div id="search-container">
-        <input type="text" id="search-input" placeholder="Search projects...">
-        <div id="search-results"></div>
+    <!-- Left Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-toggle" id="sidebarToggle">
+            <span>≡</span>
+        </div>
+        
+        <div class="sidebar-content">
+            <!-- Tab Navigation -->
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="overview">Overview</button>
+                <button class="tab-btn" data-tab="pricing">Pricing Promotion</button>
+                <button class="tab-btn" data-tab="sales">Sales Speed</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Overview Tab -->
+                <div id="overview-tab" class="tab-panel active">
+                    <h3>Market Overview</h3>
+                    <div class="info-box">
+                        <div class="color-indicator" style="background: #FF6B6B;"></div>
+                        <span>High Demand Areas</span>
+                        <span class="count">125</span>
+                    </div>
+                    <div class="info-box">
+                        <div class="color-indicator" style="background: #4ECDC4;"></div>
+                        <span>Medium Demand</span>
+                        <span class="count">89</span>
+                    </div>
+                    <div class="info-box">
+                        <div class="color-indicator" style="background: #45B7D1;"></div>
+                        <span>Low Demand</span>
+                        <span class="count">43</span>
+                    </div>
+                </div>
+
+                <!-- Pricing Promotion Tab -->
+                <div id="pricing-tab" class="tab-panel">
+                    <h3>Pricing & Promotions</h3>
+                    <div class="info-box">
+                        <div class="color-indicator" style="background: #96CEB4;"></div>
+                        <span>Premium Price</span>
+                        <span class="count">58</span>
+                    </div>
+                    <div class="info-box">
+                        <div class="color-indicator" style="background: #FECA57;"></div>
+                        <span>Special Promotion</span>
+                        <span class="count">72</span>
+                    </div>
+                    <div class="info-box">
+                        <div class="color-indicator" style="background: #FF9FF3;"></div>
+                        <span>Discounted</span>
+                        <span class="count">34</span>
+                    </div>
+                </div>
+
+                <!-- Sales Speed Tab -->
+                <div id="sales-tab" class="tab-panel">
+                    <h3>Sales Performance</h3>
+                    <div class="info-box">
+                        <div class="color-indicator" style="background: #54A0FF;"></div>
+                        <span>Fast Moving</span>
+                        <span class="count">67</span>
+                    </div>
+                    <div class="info-box">
+                        <div class="color-indicator" style="background: #5F27CD;"></div>
+                        <span>Steady Sales</span>
+                        <span class="count">91</span>
+                    </div>
+                    <div class="info-box">
+                        <div class="color-indicator" style="background: #00D2D3;"></div>
+                        <span>Slow Moving</span>
+                        <span class="count">29</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Top Right Filters -->
+    <div id="filter-container">
+        <div class="filter-group">
+            <div class="filter-box">
+                <label>Location</label>
+                <select id="location-filter" class="filter-select">
+                    <option value="Ploenchit">Ploenchit</option>
+                </select>
+            </div>
+            
+            <div class="filter-box">
+                <label>Properties Type</label>
+                <div class="multi-select" id="properties-filter">
+                    <div class="select-display">Condo</div>
+                    <div class="dropdown-content"></div>
+                </div>
+            </div>
+            
+            <div class="filter-box">
+                <label>Building Status</label>
+                <div class="multi-select" id="status-filter">
+                    <div class="select-display">Ready to Move In</div>
+                    <div class="dropdown-content"></div>
+                </div>
+            </div>
+            
+            <div class="filter-box">
+                <label>Keyword Search</label>
+                <input type="text" id="keyword-search" placeholder="Type to search..." class="keyword-input">
+                <div id="keyword-results" class="keyword-dropdown"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
     
-    <script src="/js/map.js"></script>
+    <script src="/js/app.js"></script>
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key={{GMAP_APIKEY}}&callback=initMap">
     </script>

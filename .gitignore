@@ -39,3 +39,6 @@ coverage/
 *.bak
 *.orig
 *.tmp
+# Requirements files
+requirements.txt
+requirements/
