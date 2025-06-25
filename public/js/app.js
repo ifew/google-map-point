@@ -2,12 +2,85 @@ let map;
 let markers = [];
 let currentInfoWindow = null;
 let radiusCircle = null;
+let mapCenter = { lat: 13.7440357, lng: 100.5486963 }; // Current map center for distance calculation
 let currentFilters = {
     location_id: '1',
     property_types: ['2'],
     building_status: ['1'],
     keyword: ''
 };
+
+// Calculate distance between two points using Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c; // Distance in kilometers
+    return distance;
+}
+
+// Format distance for display
+function formatDistance(distance) {
+    if (distance < 1) {
+        return `${Math.round(distance * 1000)}m`;
+    } else {
+        return `${distance.toFixed(1)}km`;
+    }
+}
+
+// Create popup content with compact and expandable views
+function createPopupContent(point, distance) {
+    const popupId = `popup-${point.project_id}`;
+    
+    return `
+        <div class="map-popup" id="${popupId}">
+            <div class="popup-compact">
+                <div class="popup-header">
+                    <h3 class="popup-title">${point.name_th || 'N/A'}</h3>
+                    <button class="popup-close-btn" onclick="closePopup(); event.stopPropagation();" title="Close">
+                        ×
+                    </button>
+                </div>
+                <div class="popup-info">
+                    <div class="popup-location">${point.location_name_th || point.province_name_th || 'N/A'}</div>
+                    <div class="popup-distance">${distance} from center</div>
+                </div>
+                <div class="popup-expand-section">
+                    <button class="popup-expand-btn" onclick="togglePopup('${popupId}'); event.stopPropagation();">
+                        <span class="expand-text">More details</span>
+                        <span class="expand-arrow">▼</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="popup-expanded" id="expanded-${popupId}" style="display: none;">
+                <div class="popup-detail-grid">
+                    <div class="popup-detail-item">
+                        <span class="popup-label">Developer:</span>
+                        <span class="popup-value">${point.developer_name_th || 'N/A'}</span>
+                    </div>
+                    <div class="popup-detail-item">
+                        <span class="popup-label">Property Type:</span>
+                        <span class="popup-value">${point.propertytype_name_th || 'N/A'}</span>
+                    </div>
+                    <div class="popup-detail-item">
+                        <span class="popup-label">Building Status:</span>
+                        <span class="popup-value">${point.building_status_name_th || 'N/A'}</span>
+                    </div>
+                    <div class="popup-detail-item">
+                        <span class="popup-label">Coordinates:</span>
+                        <span class="popup-value">${point.latitude}, ${point.longitude}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
 // Initialize the application
 async function initMap() {
@@ -44,6 +117,11 @@ async function initMap() {
 
     // Add 1km radius circle
     addRadiusCircle(nobleLocation);
+    
+    // Add click listener to close popup when clicking on map
+    map.addListener('click', () => {
+        closePopup();
+    });
     
     // Initialize components
     initSidebar();
@@ -133,6 +211,7 @@ async function loadLocationFilter() {
             if (selectedLocation) {
                 currentFilters.location_id = selectedLocation.id;
                 const newCenter = { lat: selectedLocation.lat, lng: selectedLocation.lng };
+                mapCenter = newCenter; // Update center for distance calculations
                 map.setCenter(newCenter);
                 addRadiusCircle(newCenter);
                 applyFilters();
@@ -420,28 +499,79 @@ function addMarker(point) {
         }
     });
 
+    // Calculate distance from center
+    const distance = calculateDistance(mapCenter.lat, mapCenter.lng, point.lat, point.lng);
+    const formattedDistance = formatDistance(distance);
+    
     const infoWindow = new google.maps.InfoWindow({
-        content: `
-            <div style="font-family: 'Segoe UI', sans-serif; min-width: 250px; padding: 8px;">
-                <div style="font-weight: 600; font-size: 16px; color: #333; margin-bottom: 8px;">${point.name_th || 'N/A'}</div>
-                <div style="margin-bottom: 4px;"><strong>Type:</strong> ${point.propertytype_name_th || 'N/A'}</div>
-                <div style="margin-bottom: 4px;"><strong>Developer:</strong> ${point.developer_name_th || 'N/A'}</div>
-                <div style="margin-bottom: 4px;"><strong>Lat and Long:</strong> ${point.latitude}, ${point.longitude}</div>
-                <div><strong>Total Unit:</strong> ${point.count_unit || 'N/A'}</div>
-            </div>
-        `
+        content: createPopupContent(point, formattedDistance)
     });
 
-    marker.addListener('click', () => {
+    marker.addListener('click', (event) => {
+        event.stop();
         if (currentInfoWindow) {
             currentInfoWindow.close();
         }
         infoWindow.open(map, marker);
         currentInfoWindow = infoWindow;
+        
+        // Add event listener for click outside after InfoWindow opens
+        setTimeout(() => {
+            const infoWindowElement = document.querySelector('.gm-style-iw');
+            if (infoWindowElement) {
+                document.addEventListener('click', handleOutsideClick, true);
+            }
+        }, 100);
     });
 
     markers.push(marker);
 }
 
-// Global function for search result selection
+// Toggle popup expansion
+function togglePopup(popupId) {
+    const popup = document.getElementById(popupId);
+    if (!popup) {
+        console.log('Popup not found:', popupId);
+        return;
+    }
+    
+    const expandedSection = popup.querySelector('.popup-expanded');
+    const expandBtn = popup.querySelector('.popup-expand-btn');
+    const expandArrow = expandBtn.querySelector('.expand-arrow');
+    const expandText = expandBtn.querySelector('.expand-text');
+    
+    if (expandedSection.style.display === 'none' || expandedSection.style.display === '') {
+        expandedSection.style.display = 'block';
+        expandArrow.textContent = '▲'; // Up arrow
+        expandText.textContent = 'Less details';
+    } else {
+        expandedSection.style.display = 'none';
+        expandArrow.textContent = '▼'; // Down arrow
+        expandText.textContent = 'More details';
+    }
+}
+
+// Handle clicks outside popup
+function handleOutsideClick(event) {
+    const infoWindow = document.querySelector('.gm-style-iw');
+    const mapPopup = document.querySelector('.map-popup');
+    
+    if (infoWindow && mapPopup && !mapPopup.contains(event.target)) {
+        closePopup();
+        document.removeEventListener('click', handleOutsideClick, true);
+    }
+}
+
+// Close current popup
+function closePopup() {
+    if (currentInfoWindow) {
+        currentInfoWindow.close();
+        currentInfoWindow = null;
+        document.removeEventListener('click', handleOutsideClick, true);
+    }
+}
+
+// Global functions
 window.selectKeywordResult = selectKeywordResult;
+window.togglePopup = togglePopup;
+window.closePopup = closePopup;

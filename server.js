@@ -39,7 +39,10 @@ app.get('/api/points', (req, res) => {
             latitude: project.latitude,
             longitude: project.longitude,
             count_unit: project.count_unit,
-            project_id: project.project_id
+            project_id: project.project_id,
+            location_name_th: project.location_name_th,
+            building_status_name_th: project.building_status_name_th,
+            province_name_th: project.province_name_th
         }));
         
         res.json(points);
@@ -108,6 +111,7 @@ app.get('/api/search', (req, res) => {
                 project_id: project.project_id,
                 province_name_th: project.province_name_th,
                 location_id: project.location_id,
+                location_name_th: project.location_name_th,
                 propertytype_id: project.propertytype_id,
                 building_status_id: project.building_status_id,
                 building_status_name_th: project.building_status_name_th,

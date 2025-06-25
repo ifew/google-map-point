@@ -391,3 +391,210 @@ html, body {
         min-width: 180px;
     }
 }
+
+/* Google Maps Popup Styles */
+.map-popup {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-width: 280px;
+    max-width: 350px;
+    position: relative;
+}
+
+.popup-compact {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.popup-header {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.popup-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    flex: 1;
+}
+
+/* Close button positioned at top-right of header */
+.popup-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.popup-close-btn:hover {
+    background: rgba(255, 0, 0, 0.6);
+    transform: scale(1.1);
+}
+
+/* Expand section at bottom of compact view */
+.popup-expand-section {
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.popup-expand-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.popup-expand-btn:hover {
+    background: rgba(0, 123, 255, 0.1);
+    color: #0056b3;
+}
+
+.expand-arrow {
+    transition: all 0.3s ease;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.popup-info {
+    padding: 12px 16px;
+    background: white;
+}
+
+.popup-location {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.popup-distance {
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.popup-distance::before {
+    content: "📍";
+    font-size: 12px;
+}
+
+.popup-expanded {
+    background: white;
+    border-top: 1px solid #e9ecef;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.popup-detail-grid {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.popup-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.popup-detail-item:last-child {
+    border-bottom: none;
+}
+
+.popup-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 13px;
+    min-width: 100px;
+    flex-shrink: 0;
+}
+
+.popup-value {
+    color: #333;
+    font-size: 13px;
+    text-align: right;
+    flex: 1;
+    word-break: break-word;
+}
+
+/* Custom Google Maps InfoWindow styling */
+.gm-style .gm-style-iw {
+    padding: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+}
+
+.gm-style .gm-style-iw-c {
+    padding: 0 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.gm-style .gm-style-iw-d {
+    overflow: hidden !important;
+}
+
+.gm-style .gm-style-iw-t::after {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+/* Remove default close button */
+.gm-style .gm-style-iw > button {
+    display: none !important;
+}
+
+/* Remove InfoWindow tail/pointer */
+.gm-style .gm-style-iw-chr {
+    display: none !important;
+}
+
+/* Ensure our popup content doesn't get clipped */
+.gm-style .gm-style-iw-c {
+    max-width: none !important;
+    max-height: none !important;
+}
+
+.gm-style .gm-style-iw-d {
+    max-height: none !important;
+    overflow: visible !important;
+}
