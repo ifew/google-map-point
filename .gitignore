@@ -1,0 +1,41 @@
+# Logs
+*.log
+logs/
+# Temporary files
+*.tmp
+*.temp
+*.bak
+# Build artifacts
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+# Dependency directories
+node_modules/
+bower_components/
+# Virtual environments
+venv/
+env/
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+# OS generated files
+.DS_Store
+Thumbs.db
+# Coverage reports
+coverage/
+*.lcov
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Environment variables
+.env
+# Miscellaneous
+*.swp
+*.swo
+*.bak
+*.orig
+*.tmp

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Map Points</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div id="map"></div>
+    <div id="search-container">
+        <input type="text" id="search-input" placeholder="Search projects...">
+        <div id="search-results"></div>
+    </div>
+    
+    <script src="/js/map.js"></script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key={{GMAP_APIKEY}}&callback=initMap">
+    </script>
+</body>
+</html>
