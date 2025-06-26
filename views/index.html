@@ -16,70 +16,73 @@
         <div class="sidebar-content">
             <!-- Tab Navigation -->
             <div class="tab-nav">
-                <button class="tab-btn active" data-tab="overview">Overview</button>
-                <button class="tab-btn" data-tab="pricing">Pricing Promotion</button>
-                <button class="tab-btn" data-tab="sales">Sales Speed</button>
+                <button class="tab-btn active" data-tab="summary">Property Summary</button>
+                <button class="tab-btn" data-tab="list">Property List</button>
+                <button class="tab-btn" data-tab="analytics">Analytics</button>
             </div>
 
             <!-- Tab Content -->
             <div class="tab-content">
-                <!-- Overview Tab -->
-                <div id="overview-tab" class="tab-panel active">
-                    <h3>Market Overview</h3>
-                    <div class="info-box">
-                        <div class="color-indicator" style="background: #FF6B6B;"></div>
-                        <span>High Demand Areas</span>
-                        <span class="count">125</span>
+                <!-- Property Summary Tab -->
+                <div id="summary-tab" class="tab-panel active">
+                    <h3>Current Properties</h3>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Properties</span>
+                            <span class="stat-value" id="sidebar-total-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Average Distance</span>
+                            <span class="stat-value" id="sidebar-avg-distance">0 km</span>
+                        </div>
                     </div>
-                    <div class="info-box">
-                        <div class="color-indicator" style="background: #4ECDC4;"></div>
-                        <span>Medium Demand</span>
-                        <span class="count">89</span>
+                    
+                    <h4>Property Types</h4>
+                    <div id="sidebar-property-types" class="info-boxes">
+                        <!-- Dynamic property type counts -->
                     </div>
-                    <div class="info-box">
-                        <div class="color-indicator" style="background: #45B7D1;"></div>
-                        <span>Low Demand</span>
-                        <span class="count">43</span>
-                    </div>
-                </div>
-
-                <!-- Pricing Promotion Tab -->
-                <div id="pricing-tab" class="tab-panel">
-                    <h3>Pricing & Promotions</h3>
-                    <div class="info-box">
-                        <div class="color-indicator" style="background: #96CEB4;"></div>
-                        <span>Premium Price</span>
-                        <span class="count">58</span>
-                    </div>
-                    <div class="info-box">
-                        <div class="color-indicator" style="background: #FECA57;"></div>
-                        <span>Special Promotion</span>
-                        <span class="count">72</span>
-                    </div>
-                    <div class="info-box">
-                        <div class="color-indicator" style="background: #FF9FF3;"></div>
-                        <span>Discounted</span>
-                        <span class="count">34</span>
+                    
+                    <h4>Building Status</h4>
+                    <div id="sidebar-building-status" class="info-boxes">
+                        <!-- Dynamic building status counts -->
                     </div>
                 </div>
 
-                <!-- Sales Speed Tab -->
-                <div id="sales-tab" class="tab-panel">
-                    <h3>Sales Performance</h3>
-                    <div class="info-box">
-                        <div class="color-indicator" style="background: #54A0FF;"></div>
-                        <span>Fast Moving</span>
-                        <span class="count">67</span>
+                <!-- Property List Tab -->
+                <div id="list-tab" class="tab-panel">
+                    <h3>Property List</h3>
+                    <div class="search-box">
+                        <input type="text" id="sidebar-search" placeholder="Search properties..." class="sidebar-search-input">
                     </div>
-                    <div class="info-box">
-                        <div class="color-indicator" style="background: #5F27CD;"></div>
-                        <span>Steady Sales</span>
-                        <span class="count">91</span>
+                    <div id="sidebar-property-list" class="property-list">
+                        <!-- Dynamic property list -->
                     </div>
-                    <div class="info-box">
-                        <div class="color-indicator" style="background: #00D2D3;"></div>
-                        <span>Slow Moving</span>
-                        <span class="count">29</span>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics-tab" class="tab-panel">
+                    <h3>Area Analytics</h3>
+                    <div id="sidebar-analytics" class="analytics-content">
+                        <div class="info-box">
+                            <div class="color-indicator" style="background: #007bff;"></div>
+                            <span>Within 1km</span>
+                            <span class="count" id="within-1km">0</span>
+                        </div>
+                        <div class="info-box">
+                            <div class="color-indicator" style="background: #28a745;"></div>
+                            <span>Within 2km</span>
+                            <span class="count" id="within-2km">0</span>
+                        </div>
+                        <div class="info-box">
+                            <div class="color-indicator" style="background: #ffc107;"></div>
+                            <span>Within 5km</span>
+                            <span class="count" id="within-5km">0</span>
+                        </div>
+                        <div class="info-box">
+                            <div class="color-indicator" style="background: #dc3545;"></div>
+                            <span>Beyond 5km</span>
+                            <span class="count" id="beyond-5km">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -122,6 +125,11 @@
 
     <!-- Map Container -->
     <div id="map"></div>
+    
+    <!-- Toast Notification -->
+    <div id="view-map-toast" class="view-map-toast">
+        <span id="toast-message">📍 Centering property on map...</span>
+    </div>
     
     <!-- Property Listings Section -->
     <div id="property-listings-section">

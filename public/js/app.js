@@ -208,7 +208,10 @@ function initSidebar() {
             
             // Add active class to clicked button and corresponding panel
             button.classList.add('active');
-            document.getElementById(`${tabName}-tab`).classList.add('active');
+            const targetPanel = document.getElementById(`${tabName}-tab`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
         });
     });
 }
@@ -600,8 +603,9 @@ function updateMapMarkers(points) {
         addMarker(point);
     });
     
-    // Update property listings
+    // Update property listings and sidebar
     updatePropertyListings(points);
+    updateSidebar(points);
 }
 
 // Load and display map points
@@ -707,9 +711,7 @@ function addMarker(point) {
     // No need for individual event listeners anymore
 
     // Click listener for full popup
-    marker.addListener('click', (event) => {
-        event.stop();
-        
+    marker.addListener('click', () => {
         // Close all mini popups
         closeAllMiniPopups();
         
@@ -1007,31 +1009,100 @@ function createPropertyCard(point) {
 
 // View property on map
 function viewPropertyOnMap(point) {
-    // Scroll to top of page (map area)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    console.log('Viewing property on map:', point.name_th);
     
-    // Center map on the property
-    map.setCenter({ lat: point.lat, lng: point.lng });
-    map.setZoom(17);
+    // Get coordinates (handle both formats)
+    const lat = parseFloat(point.latitude || point.lat);
+    const lng = parseFloat(point.longitude || point.lng);
     
-    // Find and trigger the marker
-    const marker = markers.find(m => 
-        Math.abs(m.getPosition().lat() - point.lat) < 0.0001 && 
-        Math.abs(m.getPosition().lng() - point.lng) < 0.0001
-    );
+    if (isNaN(lat) || isNaN(lng)) {
+        console.warn('Invalid coordinates for property:', point);
+        return;
+    }
     
-    if (marker) {
-        // Close all mini popups and current info window
+    // Remove viewing state from all property cards
+    document.querySelectorAll('.property-card.viewing').forEach(card => {
+        card.classList.remove('viewing');
+    });
+    
+    // Add viewing state to the current property card
+    const currentCard = document.querySelector(`[data-project-id="${point.project_id}"]`);
+    if (currentCard) {
+        currentCard.classList.add('viewing');
+        
+        // Remove viewing state after 5 seconds
+        setTimeout(() => {
+            currentCard.classList.remove('viewing');
+        }, 5000);
+    }
+    
+    // Show toast notification
+    showViewMapToast(point.name_th || 'Property');
+    
+    // Smooth scroll to the top of the page (Google Map area)
+    window.scrollTo({ 
+        top: 0, 
+        behavior: 'smooth' 
+    });
+    
+    // Wait for scroll to complete, then center the map and highlight marker
+    setTimeout(() => {
+        // Close all mini popups and current info window first
         closeAllMiniPopups();
         if (currentInfoWindow) {
             currentInfoWindow.close();
         }
         
-        // Trigger marker click to show full popup
-        setTimeout(() => {
-            google.maps.event.trigger(marker, 'click');
-        }, 500);
-    }
+        // Center map on the property with smooth animation
+        map.panTo({ lat: lat, lng: lng });
+        
+        // Set appropriate zoom level for property viewing
+        if (map.getZoom() < 16) {
+            map.setZoom(17);
+        }
+        
+        // Find the corresponding marker
+        const marker = markers.find(m => 
+            Math.abs(m.getPosition().lat() - lat) < 0.0001 && 
+            Math.abs(m.getPosition().lng() - lng) < 0.0001
+        );
+        
+        if (marker) {
+            // Add a slight delay to ensure map centering is complete
+            setTimeout(() => {
+                // Trigger marker click to show full popup
+                google.maps.event.trigger(marker, 'click');
+                
+                // Add visual feedback - make the marker bounce briefly
+                marker.setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(() => {
+                    marker.setAnimation(null);
+                }, 2000); // Stop bouncing after 2 seconds
+                
+            }, 300);
+        } else {
+            console.warn('Marker not found for property:', point.name_th);
+            
+            // If marker not found, still show a visual indication
+            // Create a temporary highlight circle
+            const highlightCircle = new google.maps.Circle({
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.8,
+                strokeWeight: 3,
+                fillColor: '#FF0000',
+                fillOpacity: 0.2,
+                map: map,
+                center: { lat: lat, lng: lng },
+                radius: 50 // 50 meter radius
+            });
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+                highlightCircle.setMap(null);
+            }, 3000);
+        }
+        
+    }, 800); // Wait for scroll animation to complete
 }
 
 // Show loading state for property listings
@@ -1045,6 +1116,259 @@ function showPropertyListingsLoading() {
     noResultsElement.style.display = 'none';
 }
 
+// Show toast notification for view on map action
+function showViewMapToast(propertyName) {
+    const toast = document.getElementById('view-map-toast');
+    const message = document.getElementById('toast-message');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (!toast || !message) return;
+    
+    // Update message
+    message.textContent = `📍 Centering "${propertyName}" on map...`;
+    
+    // Adjust position if sidebar is open
+    if (sidebar && sidebar.classList.contains('open')) {
+        toast.classList.add('sidebar-open');
+    } else {
+        toast.classList.remove('sidebar-open');
+    }
+    
+    // Show toast
+    toast.classList.add('show');
+    
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Update sidebar content with property data
+function updateSidebar(points) {
+    // Filter out properties with invalid coordinates
+    const validPoints = points.filter(point => {
+        const lat = parseFloat(point.latitude || point.lat);
+        const lng = parseFloat(point.longitude || point.lng);
+        return !isNaN(lat) && !isNaN(lng);
+    });
+    
+    updateSidebarSummary(validPoints);
+    updateSidebarPropertyList(validPoints);
+    updateSidebarAnalytics(validPoints);
+}
+
+// Update sidebar summary tab
+function updateSidebarSummary(points) {
+    // Update total count
+    const totalCountEl = document.getElementById('sidebar-total-count');
+    if (totalCountEl) {
+        totalCountEl.textContent = points.length;
+    }
+    
+    // Calculate and update average distance
+    if (points.length > 0) {
+        const distances = points.map(point => {
+            const lat = parseFloat(point.latitude || point.lat);
+            const lng = parseFloat(point.longitude || point.lng);
+            return calculateDistance(mapCenter.lat, mapCenter.lng, lat, lng);
+        });
+        const avgDistance = distances.reduce((sum, dist) => sum + dist, 0) / distances.length;
+        
+        const avgDistanceEl = document.getElementById('sidebar-avg-distance');
+        if (avgDistanceEl) {
+            avgDistanceEl.textContent = formatDistance(avgDistance);
+        }
+    }
+    
+    // Update property types
+    updateSidebarPropertyTypes(points);
+    
+    // Update building status
+    updateSidebarBuildingStatus(points);
+}
+
+// Update property types in sidebar
+function updateSidebarPropertyTypes(points) {
+    const container = document.getElementById('sidebar-property-types');
+    if (!container) return;
+    
+    const typeCounts = {};
+    points.forEach(point => {
+        const type = point.propertytype_name_th || 'Unknown';
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+    
+    const html = Object.entries(typeCounts).map(([type, count]) => `
+        <div class="info-box">
+            <div class="color-indicator" style="background: #007bff;"></div>
+            <span>${type}</span>
+            <span class="count">${count}</span>
+        </div>
+    `).join('');
+    
+    container.innerHTML = html;
+}
+
+// Update building status in sidebar
+function updateSidebarBuildingStatus(points) {
+    const container = document.getElementById('sidebar-building-status');
+    if (!container) return;
+    
+    const statusCounts = {};
+    const statusColors = {
+        'Ready to Move In': '#28a745',
+        'Under Construction': '#ffc107',
+        'Pre-launch': '#007bff',
+        'Completed': '#6c757d'
+    };
+    
+    points.forEach(point => {
+        const status = point.building_status_name_th || 'Unknown';
+        statusCounts[status] = (statusCounts[status] || 0) + 1;
+    });
+    
+    const html = Object.entries(statusCounts).map(([status, count]) => `
+        <div class="info-box">
+            <div class="color-indicator" style="background: ${statusColors[status] || '#6c757d'};"></div>
+            <span>${status}</span>
+            <span class="count">${count}</span>
+        </div>
+    `).join('');
+    
+    container.innerHTML = html;
+}
+
+// Update sidebar property list
+function updateSidebarPropertyList(points) {
+    const container = document.getElementById('sidebar-property-list');
+    if (!container) return;
+    
+    // Sort properties by distance
+    const sortedPoints = [...points].sort((a, b) => {
+        const distA = calculateDistance(mapCenter.lat, mapCenter.lng, 
+            parseFloat(a.latitude || a.lat), parseFloat(a.longitude || a.lng));
+        const distB = calculateDistance(mapCenter.lat, mapCenter.lng, 
+            parseFloat(b.latitude || b.lat), parseFloat(b.longitude || b.lng));
+        return distA - distB;
+    });
+    
+    const html = sortedPoints.map(point => {
+        const distance = calculateDistance(mapCenter.lat, mapCenter.lng, 
+            parseFloat(point.latitude || point.lat), parseFloat(point.longitude || point.lng));
+        
+        return `
+            <div class="sidebar-property-item" data-project-id="${point.project_id}" onclick="viewPropertyFromSidebar('${point.project_id}')">
+                <div class="sidebar-property-name">${point.name_th || 'N/A'}</div>
+                <div class="sidebar-property-details">
+                    <span class="sidebar-property-type">${point.propertytype_name_th || 'N/A'}</span>
+                    <span>${formatDistance(distance)}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = html;
+    
+    // Add search functionality
+    setupSidebarSearch(sortedPoints);
+}
+
+// Setup sidebar search functionality
+function setupSidebarSearch(points) {
+    const searchInput = document.getElementById('sidebar-search');
+    if (!searchInput) return;
+    
+    // Remove any existing event listeners
+    searchInput.removeEventListener('input', handleSidebarSearch);
+    
+    // Add new event listener
+    searchInput.addEventListener('input', (e) => handleSidebarSearch(e, points));
+}
+
+// Handle sidebar search
+function handleSidebarSearch(event, points) {
+    const query = event.target.value.toLowerCase().trim();
+    const propertyItems = document.querySelectorAll('.sidebar-property-item');
+    
+    if (query === '') {
+        // Show all items
+        propertyItems.forEach(item => {
+            item.style.display = 'block';
+        });
+        return;
+    }
+    
+    // Filter items based on search query
+    propertyItems.forEach(item => {
+        const name = item.querySelector('.sidebar-property-name').textContent.toLowerCase();
+        const type = item.querySelector('.sidebar-property-type').textContent.toLowerCase();
+        
+        if (name.includes(query) || type.includes(query)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Update sidebar analytics
+function updateSidebarAnalytics(points) {
+    const within1km = points.filter(point => {
+        const distance = calculateDistance(mapCenter.lat, mapCenter.lng, 
+            parseFloat(point.latitude || point.lat), parseFloat(point.longitude || point.lng));
+        return distance <= 1;
+    }).length;
+    
+    const within2km = points.filter(point => {
+        const distance = calculateDistance(mapCenter.lat, mapCenter.lng, 
+            parseFloat(point.latitude || point.lat), parseFloat(point.longitude || point.lng));
+        return distance <= 2;
+    }).length;
+    
+    const within5km = points.filter(point => {
+        const distance = calculateDistance(mapCenter.lat, mapCenter.lng, 
+            parseFloat(point.latitude || point.lat), parseFloat(point.longitude || point.lng));
+        return distance <= 5;
+    }).length;
+    
+    const beyond5km = points.length - within5km;
+    
+    // Update the counts
+    const elements = {
+        'within-1km': within1km,
+        'within-2km': within2km,
+        'within-5km': within5km,
+        'beyond-5km': beyond5km
+    };
+    
+    Object.entries(elements).forEach(([id, count]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = count;
+        }
+    });
+}
+
+// View property from sidebar
+function viewPropertyFromSidebar(projectId) {
+    // Remove active class from all sidebar items
+    document.querySelectorAll('.sidebar-property-item.active').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active class to clicked item
+    const clickedItem = document.querySelector(`[data-project-id="${projectId}"]`);
+    if (clickedItem) {
+        clickedItem.classList.add('active');
+    }
+    
+    // Find the property data
+    const marker = markers.find(m => m.pointData && m.pointData.project_id === projectId);
+    if (marker && marker.pointData) {
+        viewPropertyOnMap(marker.pointData);
+    }
+}
+
 // Global functions
 window.selectKeywordResult = selectKeywordResult;
 window.togglePopup = togglePopup;
@@ -1052,3 +1376,4 @@ window.closePopup = closePopup;
 window.openFullPopup = openFullPopup;
 window.closeMiniPopup = closeMiniPopup;
 window.viewPropertyOnMap = viewPropertyOnMap;
+window.viewPropertyFromSidebar = viewPropertyFromSidebar;
