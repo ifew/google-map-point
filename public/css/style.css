@@ -295,6 +295,17 @@ html, body {
     margin: 0;
 }
 
+.select-all-item {
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 4px;
+    padding-bottom: 8px !important;
+}
+
+.select-all-item label {
+    color: #007bff;
+    font-weight: 600;
+}
+
 /* Keyword Search */
 .keyword-input {
     padding: 10px 12px;

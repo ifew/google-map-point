@@ -33,5 +33,390 @@
     "name_th": "อโศก",
     "lat": 13.7378,
     "lng": 100.5611
+  },
+  {
+    "id": "6",
+    "name": "Thonglor",
+    "name_th": "ทองหล่อ",
+    "lat": 13.7308,
+    "lng": 100.5751
+  },
+  {
+    "id": "7",
+    "name": "Ekkamai",
+    "name_th": "เอกมัย",
+    "lat": 13.7200,
+    "lng": 100.5850
+  },
+  {
+    "id": "8",
+    "name": "Phrom Phong",
+    "name_th": "พร้อมพงษ์",
+    "lat": 13.7300,
+    "lng": 100.5690
+  },
+  {
+    "id": "9",
+    "name": "Ari",
+    "name_th": "อารีย์",
+    "lat": 13.7795,
+    "lng": 100.5338
+  },
+  {
+    "id": "10",
+    "name": "Chatuchak",
+    "name_th": "จตุจักร",
+    "lat": 13.7995,
+    "lng": 100.5491
+  },
+  {
+    "id": "11",
+    "name": "Ratchathewi",
+    "name_th": "ราชเทวี",
+    "lat": 13.7562,
+    "lng": 100.5361
+  },
+  {
+    "id": "12",
+    "name": "Phaya Thai",
+    "name_th": "พญาไท",
+    "lat": 13.7687,
+    "lng": 100.5361
+  },
+  {
+    "id": "13",
+    "name": "Din Daeng",
+    "name_th": "ดินแดง",
+    "lat": 13.7649,
+    "lng": 100.5598
+  },
+  {
+    "id": "14",
+    "name": "Huai Khwang",
+    "name_th": "ห้วยขวาง",
+    "lat": 13.7682,
+    "lng": 100.5744
+  },
+  {
+    "id": "15",
+    "name": "Bang Khen",
+    "name_th": "บางเขน",
+    "lat": 13.8194,
+    "lng": 100.6081
+  },
+  {
+    "id": "16",
+    "name": "Saphan Phut",
+    "name_th": "สะพานพุทธ",
+    "lat": 13.7342,
+    "lng": 100.5079
+  },
+  {
+    "id": "17",
+    "name": "Khlong Toei",
+    "name_th": "คลองเตย",
+    "lat": 13.7211,
+    "lng": 100.5598
+  },
+  {
+    "id": "18",
+    "name": "Watthana",
+    "name_th": "วัฒนา",
+    "lat": 13.7308,
+    "lng": 100.5751
+  },
+  {
+    "id": "19",
+    "name": "Bang Rak",
+    "name_th": "บางรัก",
+    "lat": 13.7248,
+    "lng": 100.5161
+  },
+  {
+    "id": "20",
+    "name": "Sathorn",
+    "name_th": "สาทร",
+    "lat": 13.7185,
+    "lng": 100.5234
+  },
+  {
+    "id": "21",
+    "name": "Yan Nawa",
+    "name_th": "ยานนาวา",
+    "lat": 13.6934,
+    "lng": 100.5234
+  },
+  {
+    "id": "22",
+    "name": "Bang Kho Laem",
+    "name_th": "บางคอแหลม",
+    "lat": 13.6871,
+    "lng": 100.5161
+  },
+  {
+    "id": "23",
+    "name": "Thon Buri",
+    "name_th": "ธนบุรี",
+    "lat": 13.7185,
+    "lng": 100.4888
+  },
+  {
+    "id": "24",
+    "name": "Bang Pho",
+    "name_th": "บางโพ",
+    "lat": 13.8194,
+    "lng": 100.5234
+  },
+  {
+    "id": "25",
+    "name": "Taling Chan",
+    "name_th": "ตลิ่งชัน",
+    "lat": 13.7562,
+    "lng": 100.4306
+  },
+  {
+    "id": "26",
+    "name": "Bangkok Yai",
+    "name_th": "บางกอกใหญ่",
+    "lat": 13.7185,
+    "lng": 100.4742
+  },
+  {
+    "id": "27",
+    "name": "Phasi Charoen",
+    "name_th": "ภาษีเจริญ",
+    "lat": 13.7185,
+    "lng": 100.4306
+  },
+  {
+    "id": "28",
+    "name": "Nong Khaem",
+    "name_th": "หนองแขม",
+    "lat": 13.6871,
+    "lng": 100.3524
+  },
+  {
+    "id": "29",
+    "name": "Bang Khae",
+    "name_th": "บางแค",
+    "lat": 13.6934,
+    "lng": 100.4015
+  },
+  {
+    "id": "30",
+    "name": "Thawi Watthana",
+    "name_th": "ทวีวัฒนา",
+    "lat": 13.7562,
+    "lng": 100.3815
+  },
+  {
+    "id": "31",
+    "name": "Bang Bon",
+    "name_th": "บางบอน",
+    "lat": 13.6559,
+    "lng": 100.3815
+  },
+  {
+    "id": "32",
+    "name": "Rat Burana",
+    "name_th": "ราษฎร์บูรณะ",
+    "lat": 13.6559,
+    "lng": 100.4597
+  },
+  {
+    "id": "33",
+    "name": "Chom Thong",
+    "name_th": "จอมทอง",
+    "lat": 13.6308,
+    "lng": 100.4597
+  },
+  {
+    "id": "34",
+    "name": "Bang Khun Thian",
+    "name_th": "บางขุนเทียน",
+    "lat": 13.6308,
+    "lng": 100.4306
+  },
+  {
+    "id": "35",
+    "name": "Thung Khru",
+    "name_th": "ทุ่งครุ",
+    "lat": 13.6308,
+    "lng": 100.5015
+  },
+  {
+    "id": "36",
+    "name": "Bang Na",
+    "name_th": "บางนา",
+    "lat": 13.6683,
+    "lng": 100.5998
+  },
+  {
+    "id": "37",
+    "name": "Prawet",
+    "name_th": "ประเวศ",
+    "lat": 13.6933,
+    "lng": 100.6653
+  },
+  {
+    "id": "38",
+    "name": "Suan Luang",
+    "name_th": "สวนหลวง",
+    "lat": 13.7308,
+    "lng": 100.6435
+  },
+  {
+    "id": "39",
+    "name": "Saphan Sung",
+    "name_th": "สะพานสูง",
+    "lat": 13.7621,
+    "lng": 100.6653
+  },
+  {
+    "id": "40",
+    "name": "Wang Thonglang",
+    "name_th": "วังทองหลาง",
+    "lat": 13.7621,
+    "lng": 100.6271
+  },
+  {
+    "id": "41",
+    "name": "Lat Krabang",
+    "name_th": "ลาดกระบัง",
+    "lat": 13.7058,
+    "lng": 100.7381
+  },
+  {
+    "id": "42",
+    "name": "Min Buri",
+    "name_th": "มีนบุรี",
+    "lat": 13.8049,
+    "lng": 100.7308
+  },
+  {
+    "id": "43",
+    "name": "Nong Chok",
+    "name_th": "หนองจอก",
+    "lat": 13.8685,
+    "lng": 100.8381
+  },
+  {
+    "id": "44",
+    "name": "Khlong Sam Wa",
+    "name_th": "คลองสามวา",
+    "lat": 13.8431,
+    "lng": 100.7745
+  },
+  {
+    "id": "45",
+    "name": "Bueng Kum",
+    "name_th": "บึงกุ่ม",
+    "lat": 13.8049,
+    "lng": 100.6508
+  },
+  {
+    "id": "46",
+    "name": "Lat Phrao",
+    "name_th": "ลาดพร้าว",
+    "lat": 13.8049,
+    "lng": 100.6144
+  },
+  {
+    "id": "47",
+    "name": "Bang Sue",
+    "name_th": "บางซื่อ",
+    "lat": 13.8058,
+    "lng": 100.5235
+  },
+  {
+    "id": "48",
+    "name": "Don Mueang",
+    "name_th": "ดอนเมือง",
+    "lat": 13.9126,
+    "lng": 100.6063
+  },
+  {
+    "id": "49",
+    "name": "Laksi",
+    "name_th": "หลักสี่",
+    "lat": 13.8685,
+    "lng": 100.5707
+  },
+  {
+    "id": "50",
+    "name": "Dusit",
+    "name_th": "ดุสิต",
+    "lat": 13.7623,
+    "lng": 100.5161
+  },
+  {
+    "id": "51",
+    "name": "Pom Prap Sattru Phai",
+    "name_th": "ป้อมปราบศัตรูพ่าย",
+    "lat": 13.7562,
+    "lng": 100.5161
+  },
+  {
+    "id": "52",
+    "name": "Samphanthawong",
+    "name_th": "สัมพันธวงศ์",
+    "lat": 13.7436,
+    "lng": 100.5015
+  },
+  {
+    "id": "53",
+    "name": "Phra Nakhon",
+    "name_th": "พระนคร",
+    "lat": 13.7562,
+    "lng": 100.5015
+  },
+  {
+    "id": "54",
+    "name": "Samyan",
+    "name_th": "สามย่าน",
+    "lat": 13.7342,
+    "lng": 100.5270
+  },
+  {
+    "id": "55",
+    "name": "Ratchada",
+    "name_th": "รัชดา",
+    "lat": 13.7649,
+    "lng": 100.5598
+  },
+  {
+    "id": "56",
+    "name": "Phahon Yothin",
+    "name_th": "พหลโยธิน",
+    "lat": 13.8194,
+    "lng": 100.5598
+  },
+  {
+    "id": "57",
+    "name": "Victory Monument",
+    "name_th": "อนุสาวรีย์ชัยสมรภูมิ",
+    "lat": 13.7623,
+    "lng": 100.5361
+  },
+  {
+    "id": "58",
+    "name": "Saphan Taksin",
+    "name_th": "สะพานตากสิน",
+    "lat": 13.7185,
+    "lng": 100.5088
+  },
+  {
+    "id": "59",
+    "name": "Krung Thon Buri",
+    "name_th": "กรุงธนบุรี",
+    "lat": 13.7185,
+    "lng": 100.4815
+  },
+  {
+    "id": "60",
+    "name": "Wongwian Yai",
+    "name_th": "วงเวียนใหญ่",
+    "lat": 13.7185,
+    "lng": 100.4669
   }
 ]

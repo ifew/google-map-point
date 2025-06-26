@@ -233,6 +233,20 @@ async function loadPropertyTypeFilter() {
         
         dropdown.innerHTML = '';
         
+        // Add "Select All" option
+        const selectAllItem = document.createElement('div');
+        selectAllItem.className = 'dropdown-item select-all-item';
+        selectAllItem.innerHTML = `
+            <input type="checkbox" id="prop-select-all" value="all">
+            <label for="prop-select-all"><strong>Select All</strong></label>
+        `;
+        dropdown.appendChild(selectAllItem);
+        
+        const selectAllCheckbox = selectAllItem.querySelector('input');
+        selectAllCheckbox.addEventListener('change', (e) => {
+            handlePropertyTypeSelectAll(e.target.checked);
+        });
+        
         propertyTypes.forEach(type => {
             const item = document.createElement('div');
             item.className = 'dropdown-item';
@@ -263,23 +277,46 @@ async function loadPropertyTypeFilter() {
     }
 }
 
+// Handle property type select all
+function handlePropertyTypeSelectAll(isChecked) {
+    const filterElement = document.getElementById('properties-filter');
+    const checkboxes = filterElement.querySelectorAll('input[type="checkbox"]:not([value="all"])');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+    });
+    
+    updatePropertyTypeDisplay();
+}
+
 // Update property type display
 function updatePropertyTypeDisplay() {
     const filterElement = document.getElementById('properties-filter');
-    const checkboxes = filterElement.querySelectorAll('input[type="checkbox"]:checked');
+    const checkboxes = filterElement.querySelectorAll('input[type="checkbox"]:not([value="all"]):checked');
+    const selectAllCheckbox = filterElement.querySelector('input[value="all"]');
     const display = filterElement.querySelector('.select-display');
     
     const selectedTypeIds = Array.from(checkboxes).map(cb => cb.value);
     const selectedTypeNames = Array.from(checkboxes).map(cb => cb.nextElementSibling.textContent);
     
-    currentFilters.property_types = selectedTypeIds;
+    // Update select all checkbox state
+    const allCheckboxes = filterElement.querySelectorAll('input[type="checkbox"]:not([value="all"])');
+    selectAllCheckbox.checked = selectedTypeIds.length === allCheckboxes.length;
     
-    if (selectedTypeIds.length === 0) {
-        display.textContent = 'Select Property Types';
-    } else if (selectedTypeIds.length === 1) {
-        display.textContent = selectedTypeNames[0];
+    // If select all is checked, don't filter by property types (show all)
+    if (selectAllCheckbox.checked) {
+        currentFilters.property_types = [];
+        display.textContent = 'All Property Types';
     } else {
-        display.textContent = `${selectedTypeIds.length} types selected`;
+        currentFilters.property_types = selectedTypeIds;
+        
+        if (selectedTypeIds.length === 0) {
+            display.textContent = 'Select Property Types';
+        } else if (selectedTypeIds.length === 1) {
+            display.textContent = selectedTypeNames[0];
+        } else {
+            display.textContent = `${selectedTypeIds.length} types selected`;
+        }
     }
     
     applyFilters();
@@ -295,6 +332,20 @@ async function loadBuildingStatusFilter() {
         const dropdown = filterElement.querySelector('.dropdown-content');
         
         dropdown.innerHTML = '';
+        
+        // Add "Select All" option
+        const selectAllItem = document.createElement('div');
+        selectAllItem.className = 'dropdown-item select-all-item';
+        selectAllItem.innerHTML = `
+            <input type="checkbox" id="status-select-all" value="all">
+            <label for="status-select-all"><strong>Select All</strong></label>
+        `;
+        dropdown.appendChild(selectAllItem);
+        
+        const selectAllCheckbox = selectAllItem.querySelector('input');
+        selectAllCheckbox.addEventListener('change', (e) => {
+            handleBuildingStatusSelectAll(e.target.checked);
+        });
         
         statuses.forEach(status => {
             const item = document.createElement('div');
@@ -326,23 +377,46 @@ async function loadBuildingStatusFilter() {
     }
 }
 
+// Handle building status select all
+function handleBuildingStatusSelectAll(isChecked) {
+    const filterElement = document.getElementById('status-filter');
+    const checkboxes = filterElement.querySelectorAll('input[type="checkbox"]:not([value="all"])');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+    });
+    
+    updateBuildingStatusDisplay();
+}
+
 // Update building status display
 function updateBuildingStatusDisplay() {
     const filterElement = document.getElementById('status-filter');
-    const checkboxes = filterElement.querySelectorAll('input[type="checkbox"]:checked');
+    const checkboxes = filterElement.querySelectorAll('input[type="checkbox"]:not([value="all"]):checked');
+    const selectAllCheckbox = filterElement.querySelector('input[value="all"]');
     const display = filterElement.querySelector('.select-display');
     
     const selectedStatusIds = Array.from(checkboxes).map(cb => cb.value);
     const selectedStatusNames = Array.from(checkboxes).map(cb => cb.nextElementSibling.textContent);
     
-    currentFilters.building_status = selectedStatusIds;
+    // Update select all checkbox state
+    const allCheckboxes = filterElement.querySelectorAll('input[type="checkbox"]:not([value="all"])');
+    selectAllCheckbox.checked = selectedStatusIds.length === allCheckboxes.length;
     
-    if (selectedStatusIds.length === 0) {
-        display.textContent = 'Select Building Status';
-    } else if (selectedStatusIds.length === 1) {
-        display.textContent = selectedStatusNames[0];
+    // If select all is checked, don't filter by building status (show all)
+    if (selectAllCheckbox.checked) {
+        currentFilters.building_status = [];
+        display.textContent = 'All Building Status';
     } else {
-        display.textContent = `${selectedStatusIds.length} statuses selected`;
+        currentFilters.building_status = selectedStatusIds;
+        
+        if (selectedStatusIds.length === 0) {
+            display.textContent = 'Select Building Status';
+        } else if (selectedStatusIds.length === 1) {
+            display.textContent = selectedStatusNames[0];
+        } else {
+            display.textContent = `${selectedStatusIds.length} statuses selected`;
+        }
     }
     
     applyFilters();
@@ -432,10 +506,12 @@ async function applyFilters() {
             params.append('location_id', currentFilters.location_id);
         }
         
+        // Only add property_types filter if it's not empty (not "select all")
         if (currentFilters.property_types && currentFilters.property_types.length > 0) {
             params.append('property_types', currentFilters.property_types.join(','));
         }
         
+        // Only add building_status filter if it's not empty (not "select all")
         if (currentFilters.building_status && currentFilters.building_status.length > 0) {
             params.append('building_status', currentFilters.building_status.join(','));
         }
