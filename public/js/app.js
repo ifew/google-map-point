@@ -123,6 +123,22 @@ async function initMap() {
         closePopup();
     });
     
+    // Global event handler for all expand buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.popup-expand-btn')) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            const expandBtn = e.target.closest('.popup-expand-btn');
+            const popup = expandBtn.closest('.map-popup');
+            
+            if (popup && popup.id) {
+                console.log('Global expand handler triggered for:', popup.id);
+                togglePopup(popup.id);
+            }
+        }
+    }, true);
+    
     // Initialize components
     initSidebar();
     initFilters();
@@ -541,9 +557,23 @@ async function applyFilters() {
 
 // Update map markers with filtered results
 function updateMapMarkers(points) {
-    // Clear existing markers
-    markers.forEach(marker => marker.setMap(null));
+    // Clear existing markers and their popups
+    markers.forEach(marker => {
+        if (marker.miniInfoWindow) {
+            marker.miniInfoWindow.close();
+        }
+        if (marker.fullInfoWindow) {
+            marker.fullInfoWindow.close();
+        }
+        marker.setMap(null);
+    });
     markers = [];
+    
+    // Close any current info window
+    if (currentInfoWindow) {
+        currentInfoWindow.close();
+        currentInfoWindow = null;
+    }
     
     // Add new markers
     points.forEach(point => {
@@ -579,23 +609,104 @@ function addMarker(point) {
     const distance = calculateDistance(mapCenter.lat, mapCenter.lng, point.lat, point.lng);
     const formattedDistance = formatDistance(distance);
     
-    const infoWindow = new google.maps.InfoWindow({
-        content: createPopupContent(point, formattedDistance)
+    // Create mini popup content (compact version with expand button)
+    const miniPopupId = `mini-popup-${point.project_id}`;
+    const miniPopupContent = `
+        <div class="map-popup mini-popup" id="${miniPopupId}">
+            <div class="popup-compact">
+                <div class="popup-header mini-header">
+                    <h3 class="popup-title mini-title">${point.name_th || 'N/A'}</h3>
+                    <button class="popup-close-btn" onclick="closeMiniPopup('${point.project_id}'); event.stopPropagation();" title="Close">×</button>
+                </div>
+                <div class="popup-info mini-info">
+                    <div class="popup-location-distance">
+                        <span class="popup-location">${point.location_name_th || point.province_name_th || 'N/A'}</span>
+                        <span class="popup-distance">${formattedDistance}</span>
+                    </div>
+                </div>
+                <div class="popup-expand-section mini-expand-section">
+                    <button class="popup-expand-btn mini-expand-btn" title="View Details">
+                        <span class="expand-text">More details</span>
+                        <span class="expand-arrow">▼</span>
+                    </button>
+                </div>
+                <div class="popup-expanded" style="display: none;">
+                    <div class="popup-detail-grid mini-detail-grid">
+                        <div class="popup-detail-item mini-detail-item">
+                            <span class="popup-label">Property Type:</span>
+                            <span class="popup-value">${point.propertytype_name_th || 'N/A'}</span>
+                        </div>
+                        <div class="popup-detail-item mini-detail-item">
+                            <span class="popup-label">Building Status:</span>
+                            <span class="popup-value">${point.building_status_name_th || 'N/A'}</span>
+                        </div>
+                        <div class="popup-detail-item mini-detail-item">
+                            <span class="popup-label">Developer:</span>
+                            <span class="popup-value">${point.developer_name_th || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Create full popup content (expandable version)
+    const fullPopupContent = createPopupContent(point, formattedDistance);
+    
+    // Create mini popup that shows by default
+    const miniInfoWindow = new google.maps.InfoWindow({
+        content: miniPopupContent
+    });
+    
+    // Create full popup for click interaction
+    const fullInfoWindow = new google.maps.InfoWindow({
+        content: fullPopupContent
     });
 
+    // Store references on marker
+    marker.miniInfoWindow = miniInfoWindow;
+    marker.fullInfoWindow = fullInfoWindow;
+    marker.pointData = point;
+
+    // Show mini popup by default
+    miniInfoWindow.open(map, marker);
+    
+    // The global event handler will catch expand button clicks
+    // No need for individual event listeners anymore
+
+    // Click listener for full popup
     marker.addListener('click', (event) => {
         event.stop();
+        
+        // Close all mini popups
+        closeAllMiniPopups();
+        
+        // Close any open full popup
         if (currentInfoWindow) {
             currentInfoWindow.close();
         }
-        infoWindow.open(map, marker);
-        currentInfoWindow = infoWindow;
+        
+        // Open full popup
+        fullInfoWindow.open(map, marker);
+        currentInfoWindow = fullInfoWindow;
         
         // Add event listener for click outside after InfoWindow opens
         setTimeout(() => {
             const infoWindowElement = document.querySelector('.gm-style-iw');
             if (infoWindowElement) {
                 document.addEventListener('click', handleOutsideClick, true);
+                
+                // Ensure expand buttons work by adding event listeners
+                const expandBtns = infoWindowElement.querySelectorAll('.popup-expand-btn');
+                expandBtns.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const popupId = this.closest('.map-popup').id;
+                        if (popupId) {
+                            togglePopup(popupId);
+                        }
+                    });
+                });
             }
         }, 100);
     });
@@ -605,26 +716,69 @@ function addMarker(point) {
 
 // Toggle popup expansion
 function togglePopup(popupId) {
-    const popup = document.getElementById(popupId);
+    console.log('Attempting to toggle popup:', popupId);
+    
+    // Multiple strategies to find the popup
+    let popup = null;
+    
+    // Strategy 1: Direct document search
+    popup = document.getElementById(popupId);
+    
+    // Strategy 2: Search in all InfoWindow containers
     if (!popup) {
-        console.log('Popup not found:', popupId);
-        return;
+        const infoWindows = document.querySelectorAll('.gm-style-iw-c, .gm-style-iw-d, .gm-style-iw');
+        for (const container of infoWindows) {
+            popup = container.querySelector(`#${popupId}`);
+            if (popup) break;
+        }
     }
+    
+    // Strategy 3: Search in all map popups
+    if (!popup) {
+        const allMapPopups = document.querySelectorAll('.map-popup');
+        for (const mapPopup of allMapPopups) {
+            if (mapPopup.id === popupId) {
+                popup = mapPopup;
+                break;
+            }
+        }
+    }
+    
+    if (!popup) {
+        console.log('Popup not found with any strategy:', popupId);
+        return false;
+    }
+    
+    console.log('Found popup:', popup);
     
     const expandedSection = popup.querySelector('.popup-expanded');
     const expandBtn = popup.querySelector('.popup-expand-btn');
+    
+    if (!expandedSection || !expandBtn) {
+        console.log('Expand elements not found in popup:', popupId);
+        console.log('expandedSection:', expandedSection);
+        console.log('expandBtn:', expandBtn);
+        return false;
+    }
+    
     const expandArrow = expandBtn.querySelector('.expand-arrow');
     const expandText = expandBtn.querySelector('.expand-text');
     
+    console.log('Toggling display from:', expandedSection.style.display);
+    
     if (expandedSection.style.display === 'none' || expandedSection.style.display === '') {
         expandedSection.style.display = 'block';
-        expandArrow.textContent = '▲'; // Up arrow
-        expandText.textContent = 'Less details';
+        if (expandArrow) expandArrow.textContent = '▲'; // Up arrow
+        if (expandText) expandText.textContent = 'Less details';
+        console.log('Expanded popup');
     } else {
         expandedSection.style.display = 'none';
-        expandArrow.textContent = '▼'; // Down arrow
-        expandText.textContent = 'More details';
+        if (expandArrow) expandArrow.textContent = '▼'; // Down arrow
+        if (expandText) expandText.textContent = 'More details';
+        console.log('Collapsed popup');
     }
+    
+    return true;
 }
 
 // Handle clicks outside popup
@@ -644,6 +798,44 @@ function closePopup() {
         currentInfoWindow.close();
         currentInfoWindow = null;
         document.removeEventListener('click', handleOutsideClick, true);
+        
+        // Restore all mini popups when full popup is closed
+        restoreAllMiniPopups();
+    }
+}
+
+// Close all mini popups
+function closeAllMiniPopups() {
+    markers.forEach(marker => {
+        if (marker.miniInfoWindow) {
+            marker.miniInfoWindow.close();
+        }
+    });
+}
+
+// Restore all mini popups
+function restoreAllMiniPopups() {
+    markers.forEach(marker => {
+        if (marker.miniInfoWindow) {
+            marker.miniInfoWindow.open(map, marker);
+        }
+    });
+}
+
+// Close specific mini popup
+function closeMiniPopup(projectId) {
+    const marker = markers.find(m => m.pointData && m.pointData.project_id === projectId);
+    if (marker && marker.miniInfoWindow) {
+        marker.miniInfoWindow.close();
+    }
+}
+
+// Open full popup from mini popup expand button
+function openFullPopup(projectId) {
+    const marker = markers.find(m => m.pointData && m.pointData.project_id === projectId);
+    if (marker) {
+        // Trigger click event on the marker to open full popup
+        google.maps.event.trigger(marker, 'click');
     }
 }
 
@@ -651,3 +843,5 @@ function closePopup() {
 window.selectKeywordResult = selectKeywordResult;
 window.togglePopup = togglePopup;
 window.closePopup = closePopup;
+window.openFullPopup = openFullPopup;
+window.closeMiniPopup = closeMiniPopup;
