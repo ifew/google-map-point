@@ -26,11 +26,26 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 // Format distance for display
 function formatDistance(distance) {
+    if (isNaN(distance)) {
+        return 'N/A';
+    }
     if (distance < 1) {
         return `${Math.round(distance * 1000)}m`;
     } else {
         return `${distance.toFixed(1)}km`;
     }
+}
+
+// Format coordinate for display
+function formatCoordinate(coord) {
+    if (coord === null || coord === undefined || coord === '') {
+        return 'N/A';
+    }
+    const numCoord = parseFloat(coord);
+    if (isNaN(numCoord)) {
+        return 'N/A';
+    }
+    return numCoord.toFixed(6);
 }
 
 // Create popup content with compact and expandable views
@@ -169,12 +184,14 @@ function initSidebar() {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const mapElement = document.getElementById('map');
     const filterContainer = document.getElementById('filter-container');
+    const propertyListingsSection = document.getElementById('property-listings-section');
 
     // Sidebar toggle functionality
     sidebarToggle.addEventListener('click', () => {
         sidebar.classList.toggle('open');
         mapElement.classList.toggle('sidebar-open');
         filterContainer.classList.toggle('sidebar-open');
+        propertyListingsSection.classList.toggle('sidebar-open');
     });
 
     // Tab functionality
@@ -515,6 +532,9 @@ function selectKeywordResult(lat, lng, projectId) {
 // Apply current filters to map data
 async function applyFilters() {
     try {
+        // Show loading state for property listings
+        showPropertyListingsLoading();
+        
         // Build query parameters
         const params = new URLSearchParams();
         
@@ -579,6 +599,9 @@ function updateMapMarkers(points) {
     points.forEach(point => {
         addMarker(point);
     });
+    
+    // Update property listings
+    updatePropertyListings(points);
 }
 
 // Load and display map points
@@ -589,8 +612,17 @@ async function loadMapPoints() {
 
 // Add marker to map
 function addMarker(point) {
+    const lat = parseFloat(point.latitude || point.lat);
+    const lng = parseFloat(point.longitude || point.lng);
+    
+    // Skip markers with invalid coordinates
+    if (isNaN(lat) || isNaN(lng)) {
+        console.warn('Skipping marker with invalid coordinates:', point);
+        return;
+    }
+    
     const marker = new google.maps.Marker({
-        position: { lat: point.lat, lng: point.lng },
+        position: { lat: lat, lng: lng },
         map: map,
         title: point.name_th,
         icon: {
@@ -606,7 +638,7 @@ function addMarker(point) {
     });
 
     // Calculate distance from center
-    const distance = calculateDistance(mapCenter.lat, mapCenter.lng, point.lat, point.lng);
+    const distance = calculateDistance(mapCenter.lat, mapCenter.lng, lat, lng);
     const formattedDistance = formatDistance(distance);
     
     // Create mini popup content (compact version with expand button)
@@ -839,9 +871,184 @@ function openFullPopup(projectId) {
     }
 }
 
+// Update property listings section
+function updatePropertyListings(points) {
+    console.log('Updating property listings with', points.length, 'properties');
+    console.log('Sample property data:', points[0]);
+    
+    const propertyGrid = document.getElementById('property-grid');
+    const totalPropertiesElement = document.getElementById('total-properties');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const noResultsElement = document.getElementById('no-results');
+    
+    if (!propertyGrid) {
+        console.error('Property grid element not found!');
+        return;
+    }
+    
+    // Update total count (will be updated again if we filter out invalid properties)
+    totalPropertiesElement.textContent = `${points.length} properties found`;
+    
+    // Hide loading and no results initially
+    loadingIndicator.style.display = 'none';
+    noResultsElement.style.display = 'none';
+    
+    if (points.length === 0) {
+        propertyGrid.innerHTML = '';
+        noResultsElement.style.display = 'block';
+        return;
+    }
+    
+    // Filter out properties with invalid coordinates
+    const validPoints = points.filter(point => {
+        const lat = parseFloat(point.latitude || point.lat);
+        const lng = parseFloat(point.longitude || point.lng);
+        return !isNaN(lat) && !isNaN(lng);
+    });
+    
+    if (validPoints.length === 0) {
+        propertyGrid.innerHTML = '';
+        noResultsElement.style.display = 'block';
+        totalPropertiesElement.textContent = '0 properties found (no valid coordinates)';
+        return;
+    }
+    
+    // Update total count with valid properties
+    totalPropertiesElement.textContent = `${validPoints.length} properties found`;
+    
+    // Generate property cards
+    const cardsHTML = validPoints.map(point => createPropertyCard(point)).join('');
+    propertyGrid.innerHTML = cardsHTML;
+    
+    // Add event listeners to property cards and view buttons
+    const propertyCards = propertyGrid.querySelectorAll('.property-card');
+    propertyCards.forEach(card => {
+        const projectId = card.dataset.projectId;
+        const lat = parseFloat(card.dataset.lat);
+        const lng = parseFloat(card.dataset.lng);
+        const point = validPoints.find(p => p.project_id === projectId);
+        
+        if (point) {
+            // Add click listener to the card
+            card.addEventListener('click', (e) => {
+                // Don't trigger if clicking on the button
+                if (!e.target.closest('.view-on-map-btn')) {
+                    viewPropertyOnMap(point);
+                }
+            });
+            
+            // Add click listener to the view button
+            const viewBtn = card.querySelector('.view-on-map-btn');
+            if (viewBtn) {
+                viewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    viewPropertyOnMap(point);
+                });
+            }
+        }
+    });
+}
+
+// Create property card HTML
+function createPropertyCard(point) {
+    const lat = parseFloat(point.latitude || point.lat);
+    const lng = parseFloat(point.longitude || point.lng);
+    
+    let distance = NaN;
+    if (!isNaN(lat) && !isNaN(lng)) {
+        distance = calculateDistance(mapCenter.lat, mapCenter.lng, lat, lng);
+    }
+    const formattedDistance = formatDistance(distance);
+    
+    return `
+        <div class="property-card" data-project-id="${point.project_id}" data-lat="${lat}" data-lng="${lng}">
+            <div class="property-card-header">
+                <h3 class="property-title">${point.name_th || 'N/A'}</h3>
+                <div class="property-location">${point.location_name_th || point.province_name_th || 'N/A'}</div>
+                <div class="property-distance">${formattedDistance}</div>
+            </div>
+            
+            <div class="property-card-body">
+                <div class="property-details">
+                    <div class="property-detail-row">
+                        <span class="property-label">Property Type:</span>
+                        <span class="property-value">
+                            <span class="property-type-badge">${point.propertytype_name_th || 'N/A'}</span>
+                        </span>
+                    </div>
+                    
+                    <div class="property-detail-row">
+                        <span class="property-label">Building Status:</span>
+                        <span class="property-value">
+                            <span class="property-status-badge">${point.building_status_name_th || 'N/A'}</span>
+                        </span>
+                    </div>
+                    
+                    <div class="property-detail-row">
+                        <span class="property-label">Developer:</span>
+                        <span class="property-value">${point.developer_name_th || 'N/A'}</span>
+                    </div>
+                    
+                    <div class="property-detail-row">
+                        <span class="property-label">Location:</span>
+                        <span class="property-value">${formatCoordinate(point.latitude || point.lat)}, ${formatCoordinate(point.longitude || point.lng)}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="property-card-footer">
+                <button class="view-on-map-btn" data-project-id="${point.project_id}">
+                    View on Map
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// View property on map
+function viewPropertyOnMap(point) {
+    // Scroll to top of page (map area)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Center map on the property
+    map.setCenter({ lat: point.lat, lng: point.lng });
+    map.setZoom(17);
+    
+    // Find and trigger the marker
+    const marker = markers.find(m => 
+        Math.abs(m.getPosition().lat() - point.lat) < 0.0001 && 
+        Math.abs(m.getPosition().lng() - point.lng) < 0.0001
+    );
+    
+    if (marker) {
+        // Close all mini popups and current info window
+        closeAllMiniPopups();
+        if (currentInfoWindow) {
+            currentInfoWindow.close();
+        }
+        
+        // Trigger marker click to show full popup
+        setTimeout(() => {
+            google.maps.event.trigger(marker, 'click');
+        }, 500);
+    }
+}
+
+// Show loading state for property listings
+function showPropertyListingsLoading() {
+    const propertyGrid = document.getElementById('property-grid');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const noResultsElement = document.getElementById('no-results');
+    
+    propertyGrid.innerHTML = '';
+    loadingIndicator.style.display = 'block';
+    noResultsElement.style.display = 'none';
+}
+
 // Global functions
 window.selectKeywordResult = selectKeywordResult;
 window.togglePopup = togglePopup;
 window.closePopup = closePopup;
 window.openFullPopup = openFullPopup;
 window.closeMiniPopup = closeMiniPopup;
+window.viewPropertyOnMap = viewPropertyOnMap;
